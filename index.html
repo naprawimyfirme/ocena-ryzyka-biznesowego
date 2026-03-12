@@ -22,6 +22,11 @@
             --red: #b71c1c;
         }
 
+        html, body {
+            height: auto !important;
+            overflow: hidden;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background: var(--bg);
@@ -786,7 +791,8 @@ function openConsultation() {
 }
 
 function sendHeight() {
-    const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    const el = document.querySelector('.container');
+    const h = el ? Math.ceil(el.getBoundingClientRect().bottom + 20) : document.body.scrollHeight;
     if (window.parent !== window) {
         try { window.parent.postMessage({ iframeHeight: h }, '*'); } catch(e) {}
     }
