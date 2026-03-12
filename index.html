@@ -5,1049 +5,805 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ocena Ryzyka Biznesowego</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --accent: #8e42ff;
+            --accent-hover: #363636;
+            --text: #333;
+            --text-muted: #666;
+            --border: #ccc;
+            --bg: #ffffff;
+            --form-bg: #f0f0f0;
+            --card: #ffffff;
+            --radius: 4px;
+            --green: #2e7d32;
+            --yellow: #7c5c00;
+            --red: #b71c1c;
         }
 
         body {
             font-family: Arial, sans-serif;
-            background-color: #ffffff;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 15px;
             line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: #ffffff;
-            overflow: hidden;
+            padding: 40px 15px 60px;
         }
 
-        .header {
-            background-color: #fff;
-            color: #333;
-            padding: 20px 10px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #333;
+        /* HEADER */
+        .page-header { text-align: center; margin-bottom: 24px; }
+        .page-header h2 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text);
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
+        }
+        .page-header h2 .icon-box {
+            width: 38px; height: 38px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .page-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* NOTE */
+        .warning-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            margin-top: 14px;
+            color: #856404;
+            font-size: 0.83rem;
         }
 
-        .header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .content {
+        /* FORM WRAP */
+        .calculator-form {
+            background: var(--form-bg);
             padding: 20px;
-            background-color: #f0f0f0;
-            border-radius: 12px;
-            margin: 10px;
-        }
-
-        .question-container {
-            margin-bottom: 30px;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.6s ease-out forwards;
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .question-container.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .question {
-            font-size: 1.3rem;
-            font-weight: 500;
-            color: #333;
+            border-radius: 8px;
             margin-bottom: 20px;
+        }
+
+        /* PROGRESS */
+        .progress-wrap { margin-bottom: 18px; }
+        .progress-bar {
+            background: #e9ecef;
+            height: 7px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .progress-fill {
+            background: var(--accent);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+        .progress-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        /* QUESTION CARD */
+        .question-card {
+            background: var(--card);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 18px 18px 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .category-badge {
+            display: inline-block;
+            background: var(--form-bg);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 14px;
             line-height: 1.4;
         }
 
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        /* OPTIONS */
+        .options { display: flex; flex-direction: column; gap: 8px; }
 
         .option {
-            background: #f8f9fa;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 15px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
             display: flex;
             align-items: flex-start;
-            gap: 15px;
+            gap: 10px;
         }
-
         .option:hover {
-            background: #e3f2fd;
-            border-color: #8e42ff;
-            box-shadow: 0 0 0 2px rgba(142, 66, 255, 0.2);
+            background: #f0e8ff;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(142,66,255,0.15);
         }
-
         .option.selected {
-            background: #8e42ff;
-            color: white;
+            background: var(--accent);
             border-color: #7a39e0;
+            color: #fff;
         }
-
-        .option-icon {
-            width: 24px;
-            height: 24px;
+        .option-num {
+            width: 22px; height: 22px;
             border-radius: 50%;
-            border: 2px solid #ccc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
+            border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 700;
             flex-shrink: 0;
-            margin-top: 2px;
+            margin-top: 1px;
+            color: var(--text-muted);
+            background: #fff;
         }
-
-        .option.selected .option-icon {
-            background: white;
-            color: #8e42ff;
-            border-color: white;
+        .option.selected .option-num {
+            background: #fff;
+            color: var(--accent);
+            border-color: #fff;
         }
-
-        .progress-bar {
-            background: #e9ecef;
-            height: 8px;
-            border-radius: 4px;
-            margin: 20px 0;
-            overflow: hidden;
+        .option-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            line-height: 1.3;
         }
-
-        .progress-fill {
-            background: #8e42ff;
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
-            width: 0%;
+        .option-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.35;
         }
+        .option.selected .option-desc { color: rgba(255,255,255,0.8); }
 
-        .progress-text {
-            text-align: center;
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-
+        /* NAV */
         .navigation {
             display: flex;
             justify-content: space-between;
-            margin-top: 40px;
+            margin-top: 16px;
         }
 
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .dh-btn-secondary {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #6c757d; color: #fff;
+            padding: 8px 18px; border: none; border-radius: var(--radius);
+            font-family: inherit; font-size: 0.9rem; cursor: pointer;
+            transition: background 0.2s;
         }
+        .dh-btn-secondary:hover:not(:disabled) { background: #5a6268; }
+        .dh-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .btn-prev {
-            background: #6c757d;
-            color: white;
+        .dh-btn-primary {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--accent); color: #fff;
+            padding: 8px 18px; border: none; border-radius: var(--radius);
+            font-family: inherit; font-size: 0.9rem; cursor: pointer;
+            transition: background 0.2s;
         }
+        .dh-btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+        .dh-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .btn-prev:hover:not(:disabled) {
-            background: #5a6268;
-        }
+        /* ===================== RESULTS ===================== */
+        .results { display: none; }
 
-        .btn-next {
-            background: #8e42ff;
-            color: white;
-        }
-
-        .btn-next:hover:not(:disabled) {
-            background: #7a39e0;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .results {
-            display: none;
-            text-align: center;
-            animation: fadeIn 1s ease-out;
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin: 10px;
-        }
-
-        .risk-score {
-            font-size: 4em;
-            font-weight: bold;
-            margin: 30px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .risk-low { color: #4caf50; }
-        .risk-medium { color: #ff9800; }
-        .risk-high { color: #f44336; }
-
-        .risk-description {
-            font-size: 1.4em;
-            margin: 20px 0;
-            font-weight: 600;
-        }
-
-        .recommendations {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: left;
-        }
-
-        .recommendations h3 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-        }
-
-        .recommendations ul {
-            list-style: none;
-        }
-
-        .recommendations li {
-            padding: 10px 0;
-            border-bottom: 1px solid #e9ecef;
-            font-size: 1.1em;
-            line-height: 1.6;
-        }
-
-        .recommendations li:before {
-            content: "✓ ";
-            color: #4caf50;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .category-scores {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin: 20px 0;
-        }
-
-        .category-score {
-            background: white;
+        /* Score banner */
+        .score-banner {
+            background: var(--card);
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 8px;
-        }
-
-        .category-header {
+            padding: 18px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            gap: 20px;
         }
-
-        .category-score h4 {
-            color: #333;
-            margin: 0;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .category-score .score {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .category-recommendations {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #f5f5f5;
-        }
-
-        .category-recommendations h5 {
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .category-recommendations ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .category-recommendations li {
-            padding: 4px 0;
-            font-size: 0.85rem;
-            line-height: 1.3;
-            color: #555;
-            border-bottom: 1px solid #f8f9fa;
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
-        }
-
-        .category-recommendations li:last-child {
-            border-bottom: none;
-        }
-
-        .category-recommendations li:before {
-            content: "→";
-            color: #8e42ff;
-            font-weight: bold;
+        .score-circle {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
             flex-shrink: 0;
-            margin-top: 1px;
-            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .score-circle .score-num { font-size: 1.6rem; line-height: 1; }
+        .score-circle .score-pct { font-size: 0.65rem; opacity: 0.85; }
+        .score-right { flex: 1; }
+        .score-level { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+        .score-desc { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+        .score-recs { font-size: 0.82rem; color: var(--text-muted); }
+
+        /* Color variants */
+        .level-excellent  { background: #e8f5e9; color: #2e7d32; }
+        .level-very-low   { background: #e3f2fd; color: #1565c0; }
+        .level-low        { background: #fff8e1; color: #7c5c00; }
+        .level-medium     { background: #fff3e0; color: #e65100; }
+        .level-high       { background: #ffebee; color: #c62828; }
+        .level-critical   { background: #fce4ec; color: #880e4f; }
+
+        /* Category scores */
+        .section-title {
+            font-size: 0.78rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--text-muted); margin-bottom: 10px; margin-top: 16px;
         }
 
-        .status-perfect {
-            color: #4CAF50;
-            font-weight: 600;
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
-        .status-good {
-            color: #4CAF50;
+        .cat-card {
+            background: var(--card);
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-
-        .status-medium {
-            color: #FF9800;
+        .cat-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 5px;
         }
-
-        .status-poor {
-            color: #F44336;
+        .cat-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+        .cat-pct  { font-size: 0.82rem; font-weight: 700; }
+        .cat-bar-bg {
+            height: 4px; background: #eee; border-radius: 2px; overflow: hidden; margin-bottom: 6px;
         }
+        .cat-bar-fill { height: 100%; border-radius: 2px; }
+        .cat-recs { font-size: 0.75rem; color: var(--text-muted); line-height: 1.35; }
+        .cat-recs span { display: block; padding: 1px 0; }
+        .cat-recs span::before { content: "→ "; color: var(--accent); font-weight: 700; font-size: 0.7rem; }
 
-        .restart-btn {
-            background: #8e42ff;
-            color: white;
-            margin-top: 30px;
-            min-width: 200px;
+        /* Status colors */
+        .st-green { color: #2e7d32; }
+        .st-yellow { color: #7c5c00; }
+        .st-red { color: #b71c1c; }
+        .bar-green  { background: #4caf50; }
+        .bar-yellow { background: #ffc107; }
+        .bar-red    { background: #f44336; }
+
+        /* Global recs */
+        .recs-box {
+            background: var(--card);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
         }
-
-        .restart-btn:hover {
-            background: #7a39e0;
+        .recs-box h4 { font-size: 0.9rem; margin-bottom: 10px; color: var(--text); }
+        .recs-box ul { list-style: none; }
+        .recs-box li {
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.85rem; line-height: 1.4; color: var(--text);
         }
+        .recs-box li:last-child { border-bottom: none; }
+        .recs-box li::before { content: "✓ "; color: #4caf50; font-weight: 700; }
 
-        .consultation-btn {
-            background: #ff6b6b;
-            color: white;
-            margin-top: 30px;
-            min-width: 250px;
+        /* Action buttons */
+        .action-row {
+            display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+            margin-top: 4px;
         }
-
-        .consultation-btn:hover {
-            background: #ee5a52;
+        .dh-btn-danger {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #f44336; color: #fff;
+            padding: 9px 20px; border: none; border-radius: var(--radius);
+            font-family: inherit; font-size: 0.9rem; cursor: pointer;
+            transition: background 0.2s;
         }
+        .dh-btn-danger:hover { background: #d32f2f; }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 15px;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .question {
-                font-size: 1.2em;
-            }
-            
-            .options {
-                gap: 10px;
-            }
-            
-            .option {
-                padding: 15px;
-            }
-            
-            .category-scores {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 580px) {
+            .category-grid { grid-template-columns: 1fr; }
+            .score-banner { flex-direction: column; text-align: center; gap: 12px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <div style="width: 40px; height: 40px; background-color: #8e42ff; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 24px;">🚀</div>
-                Ocena Ryzyka Biznesowego
-            </h1>
-            <p>Profesjonalna analiza szans powodzenia Twojego biznesu</p>
-            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 15px; margin-top: 15px; color: #856404; font-size: 0.9rem;">
-                <strong>⚠️ Ważne:</strong> Odpowiadaj krytycznie, nie upiększaj. Jeśli czegoś nie zaplanowałeś, nie pisz że to wiesz - tylko wtedy dostaniesz prawdziwą odpowiedź!
-            </div>
+<div class="container">
+
+    <div class="page-header">
+        <h2>
+            <span class="icon-box">🚀</span>
+            Ocena Ryzyka Biznesowego
+        </h2>
+        <p>Profesjonalna analiza szans powodzenia Twojego biznesu</p>
+        <div class="warning-note">
+            <strong>⚠️ Ważne:</strong> Odpowiadaj krytycznie, nie upiększaj. Tylko wtedy dostaniesz prawdziwą odpowiedź!
         </div>
-        
-        <div class="content">
-            <div id="questionnaire">
+    </div>
+
+    <!-- QUESTIONNAIRE -->
+    <div id="questionnaire">
+        <div class="calculator-form">
+            <div class="progress-wrap">
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
                 <div class="progress-text" id="progressText">Pytanie 1 z 12</div>
-                
-                <div class="question-container active" id="questionContainer">
-                    <div class="question" id="questionText"></div>
-                    <div class="options" id="optionsContainer"></div>
-                </div>
-                
-                <div class="navigation">
-                    <button class="btn btn-prev" id="prevBtn" onclick="previousQuestion()" disabled>Wstecz</button>
-                    <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Dalej</button>
-                </div>
             </div>
-            
-            <div class="results" id="results">
-                <div class="risk-score" id="riskScore"></div>
-                <div class="risk-description" id="riskDescription"></div>
-                
-                <div class="recommendations" id="recommendations">
-                    <h3>🎯 Rekomendacje dla Twojego Biznesu</h3>
-                    <ul id="recommendationsList"></ul>
-                </div>
-                
-                <div class="category-scores" id="categoryScores"></div>
-                
-                <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
-                    <button class="btn restart-btn" onclick="restartAssessment()">Rozpocznij Ponownie</button>
-                    <button class="btn consultation-btn" onclick="openConsultation()">💬 Umów Bezpłatną Konsultację</button>
-                </div>
+
+            <div class="question-card" id="questionCard">
+                <div class="category-badge" id="categoryBadge"></div>
+                <div class="question-text" id="questionText"></div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+
+            <div class="navigation">
+                <button class="dh-btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>← Wstecz</button>
+                <button class="dh-btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Dalej →</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const questions = [
-            {
-                category: "Doświadczenie",
-                question: "Jakie masz doświadczenie w branży, w której planujesz rozpocząć biznes?",
-                options: [
-                    { text: "Ponad 5 lat doświadczenia w tej branży", score: 5, description: "Znasz branżę na wylot - trendy, klientów, dostawców i pułapki. Masz sieć kontaktów i reputację w środowisku." },
-                    { text: "2-5 lat doświadczenia w tej branży", score: 4, description: "Masz solidne podstawy i rozumiesz rynek. Znasz większość wyzwań i potrafisz przewidzieć typowe problemy." },
-                    { text: "1-2 lata doświadczenia w tej branży", score: 3, description: "Masz podstawową wiedzę praktyczną, ale wciąż uczysz się niuansów. Niektóre sytuacje mogą Cię zaskoczyć." },
-                    { text: "Mam doświadczenie w podobnej branży", score: 2, description: "Transferowalne umiejętności pomogą, ale każda branża ma swoje specyficzne wyzwania. Potrzebujesz czasu na naukę." },
-                    { text: "To będzie moja pierwsza przygoda z tą branżą", score: 1, description: "Zaczynasz od zera bez praktycznej wiedzy. Będziesz się uczył na swoich błędach, co może być kosztowne." }
-                ]
-            },
-            {
-                category: "Kapitał",
-                question: "Jaki kapitał początkowy masz do dyspozycji?",
-                options: [
-                    { text: "Wystarczający na 12+ miesięcy działalności", score: 5, description: "Masz bezpieczny bufor finansowy. Możesz spokojnie budować biznes bez presji czasu i podejmować przemyślane decyzje." },
-                    { text: "Wystarczający na 6-12 miesięcy działalności", score: 4, description: "Masz rozsądny zapas, ale musisz monitorować wydatki. Większość startupów potrzebuje przynajmniej tyle czasu na wyjście na plus." },
-                    { text: "Wystarczający na 3-6 miesięcy działalności", score: 3, description: "Ograniczony budżet oznacza presję na szybkie rezultaty. Musisz być bardzo efektywny i unikać kosztownych błędów." },
-                    { text: "Wystarczający na 1-3 miesiące działalności", score: 2, description: "Bardzo ryzykowna sytuacja. Praktycznie nie masz marginesu na błędy i musisz liczyć na natychmiastowe przychody." },
-                    { text: "Minimalny kapitał, liczę na szybkie zyski", score: 1, description: "Ekstremalnie ryzykowne podejście. Jeśli biznes nie wystartuje błyskawicznie, możesz stracić wszystko w kilka tygodni." }
-                ]
-            },
-            {
-                category: "Rynek",
-                question: "Jak dobrze znasz swój rynek docelowy?",
-                options: [
-                    { text: "Przeprowadziłem szczegółowe badania rynku", score: 5, description: "Masz dane o wielkości rynku, segmentach klientów, cenach i trendach. Wiesz kto, dlaczego i za ile będzie kupował Twój produkt." },
-                    { text: "Znam rynek z własnego doświadczenia", score: 4, description: "Pracowałeś w tej branży i rozumiesz potrzeby klientów. Masz intuicję rynkową opartą na praktyce, ale brakuje Ci twardych danych." },
-                    { text: "Mam podstawową wiedzę o rynku", score: 3, description: "Znasz ogólne informacje o branży z internetu i rozmów. Wiesz kto to Twoi klienci, ale nie masz głębokiego zrozumienia ich motywacji." },
-                    { text: "Bazuję głównie na intuicji", score: 2, description: "Masz przeczucie że istnieje zapotrzebowanie, ale nie zweryfikowałeś tego. Ryzykujesz budowanie produktu, którego nikt nie chce." },
-                    { text: "Nie zbadałem jeszcze rynku dokładnie", score: 1, description: "Działasz w ciemno bez wiedzy o klientach, konkurencji czy wielkości rynku. To recepta na porażkę - 90% nieudanych startupów nie zna swojego rynku." }
-                ]
-            },
-            {
-                category: "Konkurencja",
-                question: "Jaka jest konkurencja w Twojej branży?",
-                options: [
-                    { text: "Mało konkurentów, duże możliwości", score: 5, description: "Znalazłeś niszę z niewielką konkurencją i dużym popytem. To idealna sytuacja, ale upewnij się że rynek rzeczywiście istnieje." },
-                    { text: "Umiarkowana konkurencja, ale mam przewagę", score: 4, description: "Konkurenci istnieją, ale masz unikalną wartość, technologię lub model biznesowy. Wiesz jak się wyróżnić na tle innych." },
-                    { text: "Standardowa konkurencja w branży", score: 3, description: "Typowa sytuacja rynkowa z kilkoma graczami. Sukces zależy od wykonania, marketingu i obsługi klienta - nie ma łatwych zwycięstw." },
-                    { text: "Silna konkurencja, ale widzę nisze", score: 2, description: "Rynek zdominowany przez dużych graczy, ale dostrzegasz niewykorzystane segmenty. Potrzebujesz precyzyjnej strategii i cierpliwości." },
-                    { text: "Bardzo silna konkurencja, trudny rynek", score: 1, description: "Wchodzisz na rynek z dużymi, ugruntowanymi firmami. Bez znaczącej przewagi konkurencyjnej będzie bardzo trudno przetrwać." }
-                ]
-            },
-            {
-                category: "Model biznesowy",
-                question: "Jak bardzo przemyślany jest Twój model biznesowy?",
-                options: [
-                    { text: "Mam szczegółowy biznesplan z analizami", score: 5, description: "Dokładnie zaplanowałeś przychody, koszty, kanały sprzedaży i kluczowe wskaźniki. Wiesz jak zarobisz pierwsze i kolejne miliony." },
-                    { text: "Mam solidny plan z kluczowymi elementami", score: 4, description: "Rozumiesz jak będziesz zarabiać pieniądze i masz plan na pierwsze miesiące. Niektóre detale wyjaśnią się w trakcie działania." },
-                    { text: "Mam ogólny plan działania", score: 3, description: "Wiesz co chcesz robić i jak w przybliżeniu zarabiać, ale brakuje szczegółów. Potrzebujesz dopracowania przed startem." },
-                    { text: "Mam pomysł, ale brak szczegółów", score: 2, description: "Masz wizję produktu, ale nie przemyślałeś jak przekuć ją w zyski. Ryzykujesz zbudowanie czegoś, co się nie sprzeda." },
-                    { text: "Działam głównie intuicyjnie", score: 1, description: "Nie masz jasnego planu zarabiania pieniędzy. To hazard - bez modelu biznesowego nawet genialny pomysł może spalić na panewce." }
-                ]
-            },
-            {
-                category: "Zespół",
-                question: "Czy masz zespół do realizacji biznesu?",
-                options: [
-                    { text: "Mam doświadczony zespół z komplementarnymi umiejętnościami", score: 5, description: "Twój zespół pokrywa wszystkie kluczowe obszary - techniczny, biznesowy, marketingowy. Każdy wnosi unikalne kompetencje i doświadczenie." },
-                    { text: "Mam kilka kluczowych osób w zespole", score: 4, description: "Masz współpracowników w najważniejszych rolach, ale niektóre funkcje musisz outsourcować lub rozwijać w przyszłości." },
-                    { text: "Mam jednego lub dwóch partnerów", score: 3, description: "Mały zespół oznacza większą kontrolę, ale też więcej obowiązków na osobę. Musisz być pewny że Twoi partnerzy są zaangażowani długoterminowo." },
-                    { text: "Planuję zatrudnić ludzi w przyszłości", score: 2, description: "Na razie robisz wszystko sam, co ogranicza tempo rozwoju. Znajdowanie dobrych ludzi zabiera czas i kosztuje pieniądze." },
-                    { text: "Działam sam i planuję tak pozostać", score: 1, description: "Jako solista możesz rozwijać się tylko w tempie własnych możliwości. Trudno będzie skalować biznes bez pomocy innych." }
-                ]
-            },
-            {
-                category: "Marketing",
-                question: "Jak planujesz dotrzeć do klientów?",
-                options: [
-                    { text: "Mam szczegółową strategię marketingową i budżet", score: 5, description: "Wiesz gdzie są Twoi klienci, jak do nich dotrzeć i ile to kosztuje. Masz zaplanowane kanały, komunikaty i budżet na promocję." },
-                    { text: "Mam plan marketingowy i podstawowy budżet", score: 4, description: "Znasz główne kanały dotarcia do klientów i masz budżet na start. Niektóre taktyki będziesz testować i optymalizować w praktyce." },
-                    { text: "Wiem jakie kanały chcę używać", score: 3, description: "Masz pomysł na marketing, ale brakuje szczegółów i budżetu. Ryzykujesz że wydasz pieniądze nieskutecznie." },
-                    { text: "Mam podstawowe pomysły na marketing", score: 2, description: "Ogólne wyobrażenie o promocji bez konkretnego planu. Bez systematycznego podejścia trudno będzie konkurować o uwagę klientów." },
-                    { text: "Liczę na marketing szeptany", score: 1, description: "Nadzieja że klienci sami znajdą Twój produkt to bardzo ryzykowna strategia. Nawet najlepsze produkty potrzebują aktywnej promocji." }
-                ]
-            },
-            {
-                category: "Finansowanie",
-                question: "Skąd pochodzą Twoje środki finansowe?",
-                options: [
-                    { text: "Środki własne + zewnętrzne źródła finansowania", score: 5, description: "Masz zdywersyfikowane finansowanie co obniża ryzyko. Zewnętrzni inwestorzy często wnoszą także doświadczenie i kontakty." },
-                    { text: "Głównie środki własne z zapasem", score: 4, description: "Finansujesz się z oszczędności ale masz rezerwy. To daje niezależność w podejmowaniu decyzji, ale ogranicza możliwości szybkiego wzrostu." },
-                    { text: "Środki własne bez większego zapasu", score: 3, description: "Ryzykujesz własne oszczędności bez dodatkowego zabezpieczenia. Jeśli biznes nie wypali, możesz stracić lata odkładanych pieniędzy." },
-                    { text: "Pożyczka lub środki rodziny/znajomych", score: 2, description: "Finansowanie zewnętrzne zwiększa presję i może nadwerężyć relacje osobiste. Upewnij się że wszyscy rozumieją ryzyko utraty pieniędzy." },
-                    { text: "Minimalne środki, liczę na szybki zwrot", score: 1, description: "Ekstremalnie ryzykowne - działasz na krawędzi finansowej bez marginesu błędu. Każda nieprzewidziana sytuacja może oznaczać bankructwo." }
-                ]
-            },
-            {
-                category: "Produkty/Usługi",
-                question: "Na jakim etapie jest Twój produkt/usługa?",
-                options: [
-                    { text: "Gotowy produkt przetestowany z klientami", score: 5, description: "Masz działający produkt, który sprawdzili prawdziwi klienci. Znasz ich opinie i wiesz że istnieje zapotrzebowanie na to co oferujesz." },
-                    { text: "Gotowy produkt, rozpoczynam testy", score: 4, description: "Produkt jest skończony i gotowy do pokazania klientom. Testy pokażą czy trafiłeś w ich potrzeby i co trzeba poprawić." },
-                    { text: "Produkt w fazie rozwoju", score: 3, description: "Pracujesz nad produktem ale nie jest jeszcze gotowy. Ryzykujesz że w trakcie rozwoju zmienią się wymagania rynku lub technologie." },
-                    { text: "Mam prototyp lub wstępną wersję", score: 2, description: "Masz podstawową wersję do pokazania koncepcji. Jeszcze dużo pracy przed pełnoprawnym produktem gotowym do sprzedaży." },
-                    { text: "Mam tylko pomysł na produkt", score: 1, description: "Pomysł to dopiero początek - do komercyjnego produktu droga jest długa i kosztowna. Nie wiesz jeszcze czy da się to zrealizować technicznie i finansowo." }
-                ]
-            },
-            {
-                category: "Ryzyko osobiste",
-                question: "Jakie jest Twoje osobiste ryzyko finansowe?",
-                options: [
-                    { text: "Mam stabilne źródło dochodu i oszczędności", score: 5, description: "Możesz pozwolić sobie na porażkę bez dramatycznych konsekwencji. Stabilność finansowa pozwala na spokojne podejmowanie decyzji biznesowych." },
-                    { text: "Mam oszczędności na kilka miesięcy", score: 4, description: "Masz poduszkę bezpieczeństwa na wypadek niepowodzenia. To daje spokój psychiczny, ale wymaga rozważnego gospodarowania rezerwami." },
-                    { text: "Mam podstawowe zabezpieczenie finansowe", score: 3, description: "Minimalne zabezpieczenie oznacza presję na szybkie rezultaty. Musisz balansować między ostrożnością a potrzebą działania." },
-                    { text: "Ryzykuję znaczną część swoich oszczędności", score: 2, description: "Wysokie ryzyko osobiste może prowadzić do pochopnych decyzji pod presją. Porażka biznesu będzie miała poważne konsekwencje finansowe." },
-                    { text: "To moja ostatnia szansa, ryzykuję wszystko", score: 1, description: "Desperacja to zły doradca w biznesie. Presja 'wszystko albo nic' może prowadzić do katastrofalnych błędów w ocenie i podejmowaniu decyzji." }
-                ]
-            },
-            {
-                category: "Wsparcie",
-                question: "Jakie masz wsparcie od rodziny/przyjaciół?",
-                options: [
-                    { text: "Pełne wsparcie i zrozumienie", score: 5, description: "Twoi bliscy wierzą w Twój sukces i wspierają Cię emocjonalnie. To bezcenna pomoc w trudnych momentach, które na pewno się pojawią." },
-                    { text: "Generalnie pozytywne wsparcie", score: 4, description: "Większość bliskich wspiera Twoje plany, choć może mają pewne obawy. Ich wsparcie pomoże Ci przetrwać momenty zwątpienia." },
-                    { text: "Neutralne podejście otoczenia", score: 3, description: "Nie masz aktywnego wsparcia, ale też nie napotkasz na opór. Będziesz musiał radzić sobie z wyzwaniami w dużej mierze sam." },
-                    { text: "Mieszane opinie, częściowe wsparcie", score: 2, description: "Część osób wspiera, część jest sceptyczna. Różne opinie mogą wprowadzać chaos i wpływać na Twoją pewność siebie." },
-                    { text: "Brak wsparcia lub negatywne reakcje", score: 1, description: "Otoczenie nie wierzy w Twój pomysł, co może być demotywujące. Albo wszyscy się mylą, albo widzą coś czego Ty nie dostrzegasz." }
-                ]
-            },
-            {
-                category: "Czas",
-                question: "Ile czasu możesz poświęcić na rozwój biznesu?",
-                options: [
-                    { text: "Pełny etat - 8+ godzin dziennie", score: 5, description: "Możesz w pełni skoncentrować się na biznesie. To maksymalizuje szanse powodzenia, ale oznacza też rezygnację z innych źródeł dochodu." },
-                    { text: "6-8 godzin dziennie", score: 4, description: "Solidny czas na rozwój biznesu, choć może nie zawsze wystarczy w krytycznych momentach. Musisz być bardzo efektywny w zarządzaniu czasem." },
-                    { text: "4-6 godzin dziennie", score: 3, description: "Ograniczony czas spowalnia rozwój, ale pozwala zachować inne zobowiązania. Sukces będzie wymagał więcej cierpliwości i organizacji." },
-                    { text: "2-4 godziny dziennie", score: 2, description: "Bardzo ograniczony czas oznacza że biznes będzie się rozwijał powoli. Trudno będzie konkurować z osobami poświęcającymi więcej uwagi." },
-                    { text: "Tylko weekendy i wieczory", score: 1, description: "Minimalny czas praktycznie wyklucza ambitne projekty. Możesz budować tylko bardzo proste biznesy lub działać latami na małą skalę." }
-                ]
-            }
-        ];
+    <!-- RESULTS -->
+    <div id="results" class="results"></div>
 
-        let currentQuestion = 0;
-        let answers = [];
-        let categoryScores = {};
+</div>
 
-        function initializeAssessment() {
-            currentQuestion = 0;
-            answers = [];
-            categoryScores = {};
-            document.getElementById('questionnaire').style.display = 'block';
-            document.getElementById('results').style.display = 'none';
-            showQuestion();
-        }
+<script>
+const questions = [
+    {
+        category: "Doświadczenie",
+        question: "Jakie masz doświadczenie w branży, w której planujesz rozpocząć biznes?",
+        options: [
+            { text: "Ponad 5 lat doświadczenia w tej branży", score: 5, description: "Znasz branżę na wylot – trendy, klientów, dostawców i pułapki. Masz sieć kontaktów i reputację w środowisku." },
+            { text: "2–5 lat doświadczenia w tej branży", score: 4, description: "Masz solidne podstawy i rozumiesz rynek. Znasz większość wyzwań i potrafisz przewidzieć typowe problemy." },
+            { text: "1–2 lata doświadczenia w tej branży", score: 3, description: "Masz podstawową wiedzę praktyczną, ale wciąż uczysz się niuansów. Niektóre sytuacje mogą Cię zaskoczyć." },
+            { text: "Mam doświadczenie w podobnej branży", score: 2, description: "Transferowalne umiejętności pomogą, ale każda branża ma swoje wyzwania. Potrzebujesz czasu na naukę." },
+            { text: "To będzie moja pierwsza przygoda z tą branżą", score: 1, description: "Zaczynasz od zera bez praktycznej wiedzy. Będziesz się uczył na własnych błędach, co może być kosztowne." }
+        ]
+    },
+    {
+        category: "Kapitał",
+        question: "Jaki kapitał początkowy masz do dyspozycji?",
+        options: [
+            { text: "Wystarczający na 12+ miesięcy działalności", score: 5, description: "Masz bezpieczny bufor finansowy. Możesz spokojnie budować biznes bez presji czasu." },
+            { text: "Wystarczający na 6–12 miesięcy działalności", score: 4, description: "Masz rozsądny zapas, ale musisz monitorować wydatki. Większość startupów potrzebuje przynajmniej tyle." },
+            { text: "Wystarczający na 3–6 miesięcy działalności", score: 3, description: "Ograniczony budżet oznacza presję na szybkie rezultaty. Musisz być bardzo efektywny." },
+            { text: "Wystarczający na 1–3 miesiące działalności", score: 2, description: "Bardzo ryzykowna sytuacja. Praktycznie nie masz marginesu na błędy." },
+            { text: "Minimalny kapitał, liczę na szybkie zyski", score: 1, description: "Ekstremalnie ryzykowne. Jeśli biznes nie wystartuje błyskawicznie, możesz stracić wszystko." }
+        ]
+    },
+    {
+        category: "Rynek",
+        question: "Jak dobrze znasz swój rynek docelowy?",
+        options: [
+            { text: "Przeprowadziłem szczegółowe badania rynku", score: 5, description: "Masz dane o wielkości rynku, segmentach klientów, cenach i trendach." },
+            { text: "Znam rynek z własnego doświadczenia", score: 4, description: "Pracowałeś w tej branży i rozumiesz potrzeby klientów. Masz intuicję rynkową opartą na praktyce." },
+            { text: "Mam podstawową wiedzę o rynku", score: 3, description: "Znasz ogólne informacje z internetu i rozmów. Wiesz kto to Twoi klienci, ale nie masz głębokiego zrozumienia." },
+            { text: "Bazuję głównie na intuicji", score: 2, description: "Masz przeczucie że istnieje zapotrzebowanie, ale nie zweryfikowałeś tego." },
+            { text: "Nie zbadałem jeszcze rynku dokładnie", score: 1, description: "Działasz w ciemno bez wiedzy o klientach, konkurencji czy wielkości rynku." }
+        ]
+    },
+    {
+        category: "Konkurencja",
+        question: "Jaka jest konkurencja w Twojej branży?",
+        options: [
+            { text: "Mało konkurentów, duże możliwości", score: 5, description: "Znalazłeś niszę z niewielką konkurencją i dużym popytem. Upewnij się że rynek rzeczywiście istnieje." },
+            { text: "Umiarkowana konkurencja, ale mam przewagę", score: 4, description: "Konkurenci istnieją, ale masz unikalną wartość lub model biznesowy. Wiesz jak się wyróżnić." },
+            { text: "Standardowa konkurencja w branży", score: 3, description: "Typowa sytuacja rynkowa. Sukces zależy od wykonania, marketingu i obsługi klienta." },
+            { text: "Silna konkurencja, ale widzę nisze", score: 2, description: "Rynek zdominowany przez dużych graczy, ale dostrzegasz niewykorzystane segmenty." },
+            { text: "Bardzo silna konkurencja, trudny rynek", score: 1, description: "Wchodzisz na rynek z ugruntowanymi firmami. Bez znaczącej przewagi będzie bardzo trudno przetrwać." }
+        ]
+    },
+    {
+        category: "Model biznesowy",
+        question: "Jak bardzo przemyślany jest Twój model biznesowy?",
+        options: [
+            { text: "Mam szczegółowy biznesplan z analizami", score: 5, description: "Dokładnie zaplanowałeś przychody, koszty, kanały sprzedaży i kluczowe wskaźniki." },
+            { text: "Mam solidny plan z kluczowymi elementami", score: 4, description: "Rozumiesz jak będziesz zarabiać i masz plan na pierwsze miesiące." },
+            { text: "Mam ogólny plan działania", score: 3, description: "Wiesz co chcesz robić i jak w przybliżeniu zarabiać, ale brakuje szczegółów." },
+            { text: "Mam pomysł, ale brak szczegółów", score: 2, description: "Masz wizję produktu, ale nie przemyślałeś jak przekuć ją w zyski." },
+            { text: "Działam głównie intuicyjnie", score: 1, description: "Nie masz jasnego planu zarabiania. Nawet genialny pomysł może spalić na panewce." }
+        ]
+    },
+    {
+        category: "Zespół",
+        question: "Czy masz zespół do realizacji biznesu?",
+        options: [
+            { text: "Mam doświadczony zespół z komplementarnymi umiejętnościami", score: 5, description: "Twój zespół pokrywa wszystkie kluczowe obszary – techniczny, biznesowy, marketingowy." },
+            { text: "Mam kilka kluczowych osób w zespole", score: 4, description: "Masz współpracowników w najważniejszych rolach, ale niektóre funkcje musisz outsourcować." },
+            { text: "Mam jednego lub dwóch partnerów", score: 3, description: "Mały zespół oznacza większą kontrolę, ale też więcej obowiązków na osobę." },
+            { text: "Planuję zatrudnić ludzi w przyszłości", score: 2, description: "Na razie robisz wszystko sam, co ogranicza tempo rozwoju." },
+            { text: "Działam sam i planuję tak pozostać", score: 1, description: "Jako solista możesz rozwijać się tylko w tempie własnych możliwości." }
+        ]
+    },
+    {
+        category: "Marketing",
+        question: "Jak planujesz dotrzeć do klientów?",
+        options: [
+            { text: "Mam szczegółową strategię marketingową i budżet", score: 5, description: "Wiesz gdzie są Twoi klienci, jak do nich dotrzeć i ile to kosztuje." },
+            { text: "Mam plan marketingowy i podstawowy budżet", score: 4, description: "Znasz główne kanały dotarcia i masz budżet na start. Będziesz testować i optymalizować." },
+            { text: "Wiem jakie kanały chcę używać", score: 3, description: "Masz pomysł na marketing, ale brakuje szczegółów i budżetu." },
+            { text: "Mam podstawowe pomysły na marketing", score: 2, description: "Ogólne wyobrażenie o promocji bez konkretnego planu." },
+            { text: "Liczę na marketing szeptany", score: 1, description: "Nadzieja że klienci sami Cię znajdą to bardzo ryzykowna strategia." }
+        ]
+    },
+    {
+        category: "Finansowanie",
+        question: "Skąd pochodzą Twoje środki finansowe?",
+        options: [
+            { text: "Środki własne + zewnętrzne źródła finansowania", score: 5, description: "Masz zdywersyfikowane finansowanie. Zewnętrzni inwestorzy często wnoszą też doświadczenie i kontakty." },
+            { text: "Głównie środki własne z zapasem", score: 4, description: "Finansujesz się z oszczędności, ale masz rezerwy. Daje to niezależność w podejmowaniu decyzji." },
+            { text: "Środki własne bez większego zapasu", score: 3, description: "Ryzykujesz własne oszczędności bez dodatkowego zabezpieczenia." },
+            { text: "Pożyczka lub środki rodziny/znajomych", score: 2, description: "Finansowanie zewnętrzne zwiększa presję i może nadwerężyć relacje osobiste." },
+            { text: "Minimalne środki, liczę na szybki zwrot", score: 1, description: "Działasz na krawędzi finansowej bez marginesu błędu." }
+        ]
+    },
+    {
+        category: "Produkt/Usługa",
+        question: "Na jakim etapie jest Twój produkt/usługa?",
+        options: [
+            { text: "Gotowy produkt przetestowany z klientami", score: 5, description: "Masz działający produkt sprawdzony przez prawdziwych klientów. Znasz ich opinie." },
+            { text: "Gotowy produkt, rozpoczynam testy", score: 4, description: "Produkt jest skończony i gotowy do pokazania klientom." },
+            { text: "Produkt w fazie rozwoju", score: 3, description: "Pracujesz nad produktem, ale nie jest jeszcze gotowy." },
+            { text: "Mam prototyp lub wstępną wersję", score: 2, description: "Jeszcze dużo pracy przed pełnoprawnym produktem gotowym do sprzedaży." },
+            { text: "Mam tylko pomysł na produkt", score: 1, description: "Do komercyjnego produktu droga jest długa i kosztowna." }
+        ]
+    },
+    {
+        category: "Ryzyko osobiste",
+        question: "Jakie jest Twoje osobiste ryzyko finansowe?",
+        options: [
+            { text: "Mam stabilne źródło dochodu i oszczędności", score: 5, description: "Możesz pozwolić sobie na porażkę bez dramatycznych konsekwencji." },
+            { text: "Mam oszczędności na kilka miesięcy", score: 4, description: "Masz poduszkę bezpieczeństwa. Wymaga rozważnego gospodarowania rezerwami." },
+            { text: "Mam podstawowe zabezpieczenie finansowe", score: 3, description: "Minimalne zabezpieczenie oznacza presję na szybkie rezultaty." },
+            { text: "Ryzykuję znaczną część swoich oszczędności", score: 2, description: "Wysokie ryzyko osobiste może prowadzić do pochopnych decyzji. Porażka będzie bolesna." },
+            { text: "To moja ostatnia szansa, ryzykuję wszystko", score: 1, description: "Desperacja to zły doradca w biznesie. Presja 'wszystko albo nic' prowadzi do błędów." }
+        ]
+    },
+    {
+        category: "Wsparcie",
+        question: "Jakie masz wsparcie od rodziny/przyjaciół?",
+        options: [
+            { text: "Pełne wsparcie i zrozumienie", score: 5, description: "Twoi bliscy wierzą w Twój sukces. Bezcenna pomoc w trudnych momentach." },
+            { text: "Generalnie pozytywne wsparcie", score: 4, description: "Większość bliskich wspiera Twoje plany, choć może mają pewne obawy." },
+            { text: "Neutralne podejście otoczenia", score: 3, description: "Nie masz aktywnego wsparcia, ale też nie napotkasz na opór." },
+            { text: "Mieszane opinie, częściowe wsparcie", score: 2, description: "Część wspiera, część jest sceptyczna. Różne opinie mogą wpływać na Twoją pewność siebie." },
+            { text: "Brak wsparcia lub negatywne reakcje", score: 1, description: "Albo wszyscy się mylą, albo widzą coś czego Ty nie dostrzegasz." }
+        ]
+    },
+    {
+        category: "Czas",
+        question: "Ile czasu możesz poświęcić na rozwój biznesu?",
+        options: [
+            { text: "Pełny etat – 8+ godzin dziennie", score: 5, description: "Możesz w pełni skoncentrować się na biznesie. Maksymalizuje szanse powodzenia." },
+            { text: "6–8 godzin dziennie", score: 4, description: "Solidny czas na rozwój, choć musisz być efektywny w zarządzaniu nim." },
+            { text: "4–6 godzin dziennie", score: 3, description: "Ograniczony czas spowalnia rozwój, ale pozwala zachować inne zobowiązania." },
+            { text: "2–4 godziny dziennie", score: 2, description: "Bardzo ograniczony czas – biznes będzie się rozwijał powoli." },
+            { text: "Tylko weekendy i wieczory", score: 1, description: "Minimalny czas wyklucza ambitne projekty. Możesz budować tylko bardzo proste biznesy." }
+        ]
+    }
+];
 
-        function showQuestion() {
-            const question = questions[currentQuestion];
-            document.getElementById('questionText').textContent = question.question;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-            
-            question.options.forEach((option, index) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-                optionDiv.onclick = () => selectOption(index);
-                
-                optionDiv.innerHTML = `
-                    <div class="option-icon">${index + 1}</div>
-                    <div>
-                        <div style="font-weight: 500; margin-bottom: 5px;">${option.text}</div>
-                        ${option.description ? `<div style="font-size: 0.85rem; color: #666; line-height: 1.4;">${option.description}</div>` : ''}
-                    </div>
-                `;
-                
-                optionsContainer.appendChild(optionDiv);
-            });
-            
-            updateProgress();
-            updateNavigation();
-            
-            // Jeśli już odpowiedziano na to pytanie, zaznacz odpowiedź
-            if (answers[currentQuestion] !== undefined) {
-                selectOption(answers[currentQuestion], false);
-            }
-            
-            // Wyślij nową wysokość po zmianie pytania
-            setTimeout(sendHeightToParent, 200);
-        }
+const categoryRecs = {
+    "Doświadczenie": {
+        perfect: ["Ten element jest ok"],
+        good: ["Uzupełnij wiedzę przez kursy lub mentoring", "Nawiąż kontakty z doświadczonymi graczami w branży"],
+        medium: ["Znajdź mentora z wieloletnim doświadczeniem", "Dołącz do organizacji branżowych i networkingu", "Rozważ staż u lidera rynku"],
+        poor: ["Zdobądź doświadczenie przez pracę w branży przed startem", "Znajdź doświadczonego partnera biznesowego", "Rozważ odłożenie startu"]
+    },
+    "Kapitał": {
+        perfect: ["Ten element jest ok"],
+        good: ["Stwórz dodatkowy fundusz awaryjny", "Monitoruj cash flow i kontroluj koszty"],
+        medium: ["Zabezpiecz kapitał na minimum 6 miesięcy", "Rozważ pozyskanie zewnętrznego finansowania", "Opracuj scenariusze dla różnych poziomów sprzedaży"],
+        poor: ["Zbierz więcej kapitału przed startem", "Znajdź inwestora lub partnera finansowego", "Rozważ dotacje lub pożyczkę biznesową"]
+    },
+    "Rynek": {
+        perfect: ["Ten element jest ok"],
+        good: ["Regularnie aktualizuj badania rynku", "Monitoruj zmiany w zachowaniach klientów"],
+        medium: ["Przeprowadź badania ilościowe i jakościowe", "Przetestuj założenia z prawdziwymi klientami", "Przeanalizuj strategie konkurencji"],
+        poor: ["Dokładnie zbadaj rynek docelowy przed startem", "Przeprowadź wywiady z potencjalnymi klientami", "Zidentyfikuj trendy i zmiany w branży"]
+    },
+    "Konkurencja": {
+        perfect: ["Ten element jest ok"],
+        good: ["Monitoruj działania konkurencji", "Utrzymuj przewagę konkurencyjną"],
+        medium: ["Przeanalizuj słabe strony głównych konkurentów", "Opracuj unikalną propozycję wartości", "Monitoruj ceny i oferty konkurencji"],
+        poor: ["Szczegółowo przeanalizuj wszystkich konkurentów", "Znajdź niszę lub niewykorzystane segmenty", "Rozważ współpracę zamiast bezpośredniej konkurencji"]
+    },
+    "Model biznesowy": {
+        perfect: ["Ten element jest ok"],
+        good: ["Regularnie weryfikuj i aktualizuj model biznesowy", "Testuj nowe źródła przychodów"],
+        medium: ["Stwórz szczegółowy biznesplan z projekcjami finansowymi", "Zdefiniuj kluczowe wskaźniki KPI", "Zaplanuj skalowanie biznesu"],
+        poor: ["Opracuj kompletny model biznesowy przed startem", "Stwórz realistyczne prognozy finansowe", "Zidentyfikuj kluczowe zasoby i partnerstwa"]
+    },
+    "Zespół": {
+        perfect: ["Ten element jest ok"],
+        good: ["Rozwijaj umiejętności zespołu", "Planuj przyszłe rekrutacje strategicznie"],
+        medium: ["Znajdź partnera z komplementarnymi umiejętnościami", "Rozważ outsourcing niektórych funkcji"],
+        poor: ["Znajdź współzałożyciela z potrzebnymi umiejętnościami", "Rozważ freelancerów na start", "Stwórz jasne role i odpowiedzialności"]
+    },
+    "Marketing": {
+        perfect: ["Ten element jest ok"],
+        good: ["Testuj różne kanały marketingowe", "Mierz efektywność działań promocyjnych"],
+        medium: ["Stwórz kompleksową strategię marketingową", "Przetestuj kanały dotarcia do klientów", "Opracuj plan komunikacji i branding"],
+        poor: ["Opracuj strategię dotarcia do klientów przed startem", "Zaplanuj budżet na marketing", "Przetestuj różne formy komunikacji"]
+    },
+    "Finansowanie": {
+        perfect: ["Ten element jest ok"],
+        good: ["Monitoruj zobowiązania finansowe", "Planuj przyszłe rundy finansowania"],
+        medium: ["Zdywersyfikuj źródła finansowania", "Rozważ dotacje, pożyczki, leasing", "Stwórz plan finansowy na 2–3 lata"],
+        poor: ["Zabezpiecz stabilne finansowanie przed startem", "Rozważ etapowe finansowanie projektu", "Przygotuj plan B w przypadku problemów"]
+    },
+    "Produkt/Usługa": {
+        perfect: ["Ten element jest ok"],
+        good: ["Regularnie zbieraj feedback od klientów", "Planuj systematyczny rozwój produktu"],
+        medium: ["Dokończ rozwój przed komercjalizacją", "Przetestuj z grupą klientów testowych", "Zaplanuj support i obsługę klienta"],
+        poor: ["Skoncentruj się na stworzeniu MVP", "Przetestuj koncepcję z potencjalnymi klientami", "Zaplanuj czas i budżet na dokończenie"]
+    },
+    "Ryzyko osobiste": {
+        perfect: ["Ten element jest ok"],
+        good: ["Utrzymuj równowagę między inwestycją a zabezpieczeniem"],
+        medium: ["Stwórz osobisty fundusz awaryjny", "Przygotuj plan B dla swojej kariery"],
+        poor: ["Zabezpiecz podstawowe potrzeby finansowe", "Rozważ start przy zachowaniu pracy", "Stwórz plan wyjścia w razie niepowodzenia"]
+    },
+    "Wsparcie": {
+        perfect: ["Ten element jest ok"],
+        good: ["Utrzymuj otwartą komunikację z bliskimi"],
+        medium: ["Edukuj rodzinę o swoich planach", "Znajdź wsparcie w grupach przedsiębiorców"],
+        poor: ["Przedyskutuj plany z najbliższymi", "Rozważ czy negatywne opinie mają uzasadnienie", "Znajdź mentora lub grupę wsparcia"]
+    },
+    "Czas": {
+        perfect: ["Ten element jest ok"],
+        good: ["Optymalizuj zarządzanie czasem", "Priorytetyzuj najważniejsze zadania"],
+        medium: ["Zwiększ czas poświęcany na biznes", "Zaplanuj harmonogram pracy nad projektem"],
+        poor: ["Przemyśl czy masz wystarczająco czasu", "Rozważ zmianę obecnej sytuacji zawodowej", "Skup się na prostszych rozwiązaniach"]
+    }
+};
 
-        function selectOption(optionIndex, animate = true) {
-            answers[currentQuestion] = optionIndex;
-            
-            // Usuń poprzednie zaznaczenie
-            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
-            
-            // Zaznacz nową opcję
-            document.querySelectorAll('.option')[optionIndex].classList.add('selected');
-            
-            // Włącz przycisk dalej
-            document.getElementById('nextBtn').disabled = false;
-            
-            if (animate) {
-                // Automatycznie przejdź do następnego pytania po 1 sekundzie
-                setTimeout(() => {
-                    if (currentQuestion < questions.length - 1) {
-                        nextQuestion();
-                    }
-                }, 800);
-            }
-        }
+let currentQuestion = 0;
+let answers = [];
 
-        function nextQuestion() {
-            if (answers[currentQuestion] === undefined) return;
-            
-            if (currentQuestion < questions.length - 1) {
-                currentQuestion++;
-                showQuestion();
-            } else {
-                showResults();
-            }
-        }
+function init() {
+    currentQuestion = 0;
+    answers = [];
+    document.getElementById('questionnaire').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('results').innerHTML = '';
+    showQuestion();
+}
 
-        function previousQuestion() {
-            if (currentQuestion > 0) {
-                currentQuestion--;
-                showQuestion();
-            }
-        }
+function showQuestion() {
+    const q = questions[currentQuestion];
+    document.getElementById('categoryBadge').textContent = q.category;
+    document.getElementById('questionText').textContent = q.question;
 
-        function updateProgress() {
-            const progress = ((currentQuestion + 1) / questions.length) * 100;
-            document.getElementById('progressFill').style.width = progress + '%';
-            document.getElementById('progressText').textContent = `Pytanie ${currentQuestion + 1} z ${questions.length}`;
-        }
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+        const div = document.createElement('div');
+        div.className = 'option';
+        div.onclick = () => selectOption(i);
+        div.innerHTML = `
+            <div class="option-num">${i + 1}</div>
+            <div>
+                <div class="option-text">${opt.text}</div>
+                <div class="option-desc">${opt.description}</div>
+            </div>`;
+        container.appendChild(div);
+    });
 
-        function updateNavigation() {
-            document.getElementById('prevBtn').disabled = currentQuestion === 0;
-            document.getElementById('nextBtn').disabled = answers[currentQuestion] === undefined;
-            
-            if (currentQuestion === questions.length - 1) {
-                document.getElementById('nextBtn').textContent = 'Zobacz Wyniki';
-            } else {
-                document.getElementById('nextBtn').textContent = 'Dalej';
-            }
-        }
+    // restore previous answer
+    if (answers[currentQuestion] !== undefined) {
+        document.querySelectorAll('.option')[answers[currentQuestion]].classList.add('selected');
+    }
 
-        function calculateResults() {
-            let totalScore = 0;
-            categoryScores = {};
-            
-            answers.forEach((answerIndex, questionIndex) => {
-                const question = questions[questionIndex];
-                const score = question.options[answerIndex].score;
-                const category = question.category;
-                
-                totalScore += score;
-                
-                if (!categoryScores[category]) {
-                    categoryScores[category] = { score: 0, max: 0 };
-                }
-                categoryScores[category].score += score;
-                categoryScores[category].max += 5;
-            });
-            
-            const maxScore = questions.length * 5;
-            const percentage = (totalScore / maxScore) * 100;
-            
-            return { totalScore, maxScore, percentage, categoryScores };
-        }
+    updateProgress();
+    updateNav();
+    sendHeight();
+}
 
-        function showResults() {
-            const results = calculateResults();
-            
-            document.getElementById('questionnaire').style.display = 'none';
-            document.getElementById('results').style.display = 'block';
-            
-            // Określ poziom ryzyka
-            let riskLevel, riskClass, riskText;
-            if (results.percentage >= 95) {
-                riskLevel = "DOSKONAŁE PRZYGOTOWANIE";
-                riskClass = "risk-excellent";
-                riskText = "🏆 Wzorowe przygotowanie! Jesteś gotowy na sukces biznesowy!";
-            } else if (results.percentage >= 85) {
-                riskLevel = "BARDZO NISKIE RYZYKO";
-                riskClass = "risk-very-low";
-                riskText = "🚀 Świetne podstawy! Możesz śmiało rozpocząć działalność.";
-            } else if (results.percentage >= 75) {
-                riskLevel = "NIEDOBORY PRZYGOTOWANIA";
-                riskClass = "risk-low";
-                riskText = "⚠️ Masz luki w przygotowaniu. Popraw kluczowe obszary przed startem.";
-            } else if (results.percentage >= 60) {
-                riskLevel = "POWAŻNE BRAKI";
-                riskClass = "risk-medium";
-                riskText = "🛑 Znaczące niedobory w planowaniu. Biznes wymaga gruntownej pracy.";
-            } else if (results.percentage >= 40) {
-                riskLevel = "KATASTROFALNE PRZYGOTOWANIE";
-                riskClass = "risk-high";
-                riskText = "💀 Krytyczne braki! Obecny stan gwarantuje porażkę biznesową.";
-            } else {
-                riskLevel = "RECEPTA NA BANKRUCTWO";
-                riskClass = "risk-critical";
-                riskText = "☠️ Totalna nieprzygotowanie! To droga prosto do finansowej katastrofy.";
-            }
-            
-            document.getElementById('riskScore').innerHTML = `${Math.round(results.percentage)}%<br><span style="font-size: 0.4em;">${riskLevel}</span>`;
-            document.getElementById('riskScore').className = `risk-score ${riskClass}`;
-            document.getElementById('riskDescription').textContent = riskText;
-            
-            // Pokaż wyniki kategorii
-            showCategoryScores();
-            
-            // Pokaż rekomendacje
-            showRecommendations(results);
-            
-            // Wyślij nową wysokość po pokazaniu wyników
-            setTimeout(sendHeightToParent, 500);
-        }
+function selectOption(idx, autoAdvance = true) {
+    answers[currentQuestion] = idx;
+    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    document.querySelectorAll('.option')[idx].classList.add('selected');
+    document.getElementById('nextBtn').disabled = false;
 
-        function showCategoryScores() {
-            const container = document.getElementById('categoryScores');
-            container.innerHTML = '';
-            
-            const categoryRecommendations = {
-                "Doświadczenie": {
-                    perfect: "Ten element jest ok",
-                    good: ["Uzupełnij wiedzę branżową przez kursy lub mentoring", "Nawiąż kontakty z doświadczonymi graczami w branży"],
-                    medium: ["Znajdź mentora z wieloletnim doświadczeniem w branży", "Dołącz do organizacji branżowych i wydarzeń networkingowych", "Rozważ praktyki lub staż u lidera rynku", "Studiuj case studies konkurentów i ich błędy"],
-                    poor: ["Zdobądź doświadczenie przez pracę w branży przed startem", "Znajdź doświadczonego partnera biznesowego", "Przeprowadź intensywne badania rynku i branży", "Rozważ odłożenie startu do zdobycia większego doświadczenia"]
-                },
-                "Kapitał": {
-                    perfect: "Ten element jest ok",
-                    good: ["Stwórz dodatkowy fundusz awaryjny na nieprzewidziane wydatki", "Monitoruj cash flow i kontroluj koszty"],
-                    medium: ["Zabezpiecz kapitał na minimum 6 miesięcy działalności", "Przygotuj plan oszczędnościowy i redukcji kosztów", "Rozważ pozyskanie zewnętrznego finansowania", "Opracuj scenariusze dla różnych poziomów sprzedaży"],
-                    poor: ["Zatrzymaj się i zbierz więcej kapitału przed startem", "Znajdź inwestora lub partnera finansowego", "Rozważ pożyczkę biznesową lub dotacje", "Stwórz szczegółowy budżet i plan finansowy"]
-                },
-                "Rynek": {
-                    perfect: "Ten element jest ok",
-                    good: ["Regularnie aktualizuj badania rynku", "Monitoruj zmiany w zachowaniach klientów"],
-                    medium: ["Przeprowadź szczegółowe badania ilościowe i jakościowe", "Zdefiniuj dokładnie swojego idealnego klienta", "Przetestuj swoje założenia z prawdziwymi klientami", "Przeanalizuj strategie konkurencji"],
-                    poor: ["Przed startem dokładnie zbadaj swój rynek docelowy", "Przeprowadź wywiady z potencjalnymi klientami", "Przeanalizuj wielkość i potencjał rynku", "Zidentyfikuj trendy i zmiany w branży"]
-                },
-                "Konkurencja": {
-                    perfect: "Ten element jest ok",
-                    good: ["Monitoruj działania konkurencji", "Utrzymuj przewagę konkurencyjną"],
-                    medium: ["Przeanalizuj słabe strony głównych konkurentów", "Znajdź sposób na wyróżnienie się na rynku", "Opracuj unikalną propozycję wartości", "Monitoruj ceny i oferty konkurencji"],
-                    poor: ["Szczegółowo przeanalizuj wszystkich konkurentów", "Znajdź niszę lub niewykorzystane segmenty", "Opracuj strategię konkurowania z liderami", "Rozważ współpracę zamiast bezpośredniej konkurencji"]
-                },
-                "Model biznesowy": {
-                    perfect: "Ten element jest ok",
-                    good: ["Regularnie weryfikuj i aktualizuj model biznesowy", "Testuj nowe źródła przychodów"],
-                    medium: ["Stwórz szczegółowy biznesplan z projekcjami finansowymi", "Zdefiniuj kluczowe wskaźniki efektywności (KPI)", "Przeanalizuj różne scenariusze rozwoju", "Zaplanuj skalowanie biznesu"],
-                    poor: ["Opracuj kompletny model biznesowy przed startem", "Określ dokładnie jak będziesz zarabiać pieniądze", "Stwórz realistyczne prognozy finansowe", "Zidentyfikuj kluczowe zasoby i partnerstwa"]
-                },
-                "Zespół": {
-                    perfect: "Ten element jest ok",
-                    good: ["Rozwijaj umiejętności zespołu", "Planuj przyszłe rekrutacje strategicznie"],
-                    medium: ["Zidentyfikuj kluczowe role do obsadzenia", "Znajdź partnera z komplementarnymi umiejętnościami", "Stwórz plan rozwoju zespołu", "Rozważ outsourcing niektórych funkcji"],
-                    poor: ["Znajdź współzałożyciela z potrzebnymi umiejętnościami", "Zaplanuj strategię budowania zespołu", "Rozważ freelancerów na start", "Stwórz jasne role i odpowiedzialności"]
-                },
-                "Marketing": {
-                    perfect: "Ten element jest ok",
-                    good: ["Testuj różne kanały marketingowe", "Mierz efektywność działań promocyjnych"],
-                    medium: ["Stwórz kompleksową strategię marketingową", "Zdefiniuj budżet marketingowy i alokację", "Przetestuj kanały dotarcia do klientów", "Opracuj plan komunikacji i branding"],
-                    poor: ["Przed startem opracuj strategię dotarcia do klientów", "Zbadaj gdzie znajdują się Twoi klienci", "Zaplanuj budżet na marketing i promocję", "Przetestuj różne formy komunikacji"]
-                },
-                "Finansowanie": {
-                    perfect: "Ten element jest ok",
-                    good: ["Monitoruj swoje zobowiązania finansowe", "Planuj przyszłe rundy finansowania"],
-                    medium: ["Zdywersyfikuj źródła finansowania", "Przygotuj plan spłaty zewnętrznych środków", "Rozważ różne formy finansowania (dotacje, pożyczki)", "Stwórz plan finansowy na następne 2-3 lata"],
-                    poor: ["Zabezpiecz stabilne finansowanie przed startem", "Nie ryzykuj pieniędzy których nie możesz stracić", "Rozważ etapowe finansowanie projektu", "Przygotuj plan B w przypadku problemów finansowych"]
-                },
-                "Produkty/Usługi": {
-                    perfect: "Ten element jest ok",
-                    good: ["Regularnie zbieraj feedback od klientów", "Planuj rozwój produktu"],
-                    medium: ["Dokończ rozwój produktu przed komercjalizacją", "Przetestuj produkt z grupą klientów testowych", "Przygotuj plan iteracji i usprawnień", "Zaplanuj support i obsługę klienta"],
-                    poor: ["Skoncentruj się na stworzeniu MVP (Minimum Viable Product)", "Przetestuj swoją koncepcję z potencjalnymi klientami", "Nie rozpoczynaj sprzedaży bez gotowego produktu", "Zaplanuj czas i budżet na dokończenie produktu"]
-                },
-                "Ryzyko osobiste": {
-                    perfect: "Ten element jest ok",
-                    good: ["Utrzymuj równowagę między inwestycją a zabezpieczeniem", "Regularnie oceniaj swoją sytuację finansową"],
-                    medium: ["Stwórz osobisty fundusz awaryjny", "Nie inwestuj więcej niż możesz stracić", "Rozważ stopniowe zmniejszanie innych zobowiązań", "Przygotuj plan B dla swojej kariery"],
-                    poor: ["Zabezpiecz swoje podstawowe potrzeby finansowe", "Nie ryzykuj całych oszczędności życia", "Rozważ rozpoczęcie biznesu przy zachowaniu pracy", "Stwórz plan wyjścia w przypadku niepowodzenia"]
-                },
-                "Wsparcie": {
-                    perfect: "Ten element jest ok",
-                    good: ["Utrzymuj otwartą komunikację z bliskimi", "Doceniaj otrzymane wsparcie"],
-                    medium: ["Edukuj rodzinę o swoich planach biznesowych", "Pokaż konkretny plan i perspektywy", "Znajdź wsparcie w grupach przedsiębiorców", "Komunikuj regularnie postępy i wyzwania"],
-                    poor: ["Przedyskutuj swoje plany z najbliższymi", "Pokaż realny biznesplan i perspektywy", "Znajdź mentora lub grupę wsparcia", "Rozważ czy negatywne opinie mają uzasadnienie"]
-                },
-                "Czas": {
-                    perfect: "Ten element jest ok",
-                    good: ["Optymalizuj zarządzanie czasem", "Priorytetyzuj najważniejsze zadania"],
-                    medium: ["Zwiększ czas poświęcany na biznes", "Zoptymalizuj swoje inne zobowiązania", "Zaplanuj harmonogram pracy nad projektem", "Rozważ redukcję innych aktywności"],
-                    poor: ["Przemyśl czy masz wystarczająco czasu na sukces", "Rozważ zmianę obecnej sytuacji zawodowej", "Zaplanuj realistyczny harmonogram rozwoju", "Skup się na najprostszych rozwiązaniach biznesowych"]
-                }
+    if (autoAdvance) {
+        setTimeout(() => {
+            nextQuestion();
+        }, 700);
+    }
+}
+
+function nextQuestion() {
+    if (answers[currentQuestion] === undefined) return;
+    if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        showQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function previousQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion();
+    }
+}
+
+function updateProgress() {
+    const pct = ((currentQuestion + 1) / questions.length) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `Pytanie ${currentQuestion + 1} z ${questions.length}`;
+}
+
+function updateNav() {
+    document.getElementById('prevBtn').disabled = currentQuestion === 0;
+    document.getElementById('nextBtn').disabled = answers[currentQuestion] === undefined;
+    document.getElementById('nextBtn').textContent = currentQuestion === questions.length - 1 ? 'Zobacz wyniki →' : 'Dalej →';
+}
+
+function showResults() {
+    let total = 0;
+    const catData = {};
+
+    answers.forEach((ai, qi) => {
+        const q = questions[qi];
+        const score = q.options[ai].score;
+        total += score;
+        if (!catData[q.category]) catData[q.category] = { score: 0, max: 0 };
+        catData[q.category].score += score;
+        catData[q.category].max += 5;
+    });
+
+    const maxScore = questions.length * 5;
+    const pct = (total / maxScore) * 100;
+
+    // Risk level
+    let level, levelClass, emoji, desc;
+    if (pct >= 95)      { level = "Doskonałe przygotowanie"; levelClass = "level-excellent"; emoji = "🏆"; desc = "Możesz śmiało rozpocząć działalność!"; }
+    else if (pct >= 85) { level = "Bardzo niskie ryzyko"; levelClass = "level-very-low"; emoji = "🚀"; desc = "Świetne podstawy – dopracuj ostatnie szczegóły."; }
+    else if (pct >= 75) { level = "Niedobory przygotowania"; levelClass = "level-low"; emoji = "⚠️"; desc = "Masz luki – popraw kluczowe obszary przed startem."; }
+    else if (pct >= 60) { level = "Poważne braki"; levelClass = "level-medium"; emoji = "🛑"; desc = "Znaczące niedobory – biznes wymaga gruntownej pracy."; }
+    else if (pct >= 40) { level = "Katastrofalne przygotowanie"; levelClass = "level-high"; emoji = "💀"; desc = "Krytyczne braki – obecny stan gwarantuje porażkę."; }
+    else                { level = "Recepta na bankructwo"; levelClass = "level-critical"; emoji = "☠️"; desc = "Totalne nieprzygotowanie – droga do finansowej katastrofy."; }
+
+    // Global recs
+    const sorted = Object.entries(catData)
+        .map(([cat, d]) => ({ cat, pct: d.score / d.max * 100 }))
+        .sort((a, b) => a.pct - b.pct);
+
+    const recs = [];
+    sorted.slice(0, 3).forEach(({ cat, pct: cp }) => {
+        if (cp < 60) {
+            const map = {
+                "Doświadczenie": "Zdobądź doświadczenie lub znajdź mentora w branży",
+                "Kapitał": "Zabezpiecz kapitał na minimum 6 miesięcy działalności",
+                "Rynek": "Przeprowadź badania rynku przed startem",
+                "Model biznesowy": "Opracuj szczegółowy biznesplan z analizą finansową",
+                "Marketing": "Stwórz strategię marketingową i zabezpiecz budżet"
             };
-            
-            Object.entries(categoryScores).forEach(([category, data]) => {
-                const percentage = (data.score / data.max) * 100;
-                let colorClass, statusText, recommendations;
-                
-                if (percentage === 100) {
-                    colorClass = 'status-perfect';
-                    statusText = 'Doskonale!';
-                    recommendations = [categoryRecommendations[category].perfect];
-                } else if (percentage >= 80) {
-                    colorClass = 'status-good';
-                    statusText = 'Dobrze';
-                    recommendations = categoryRecommendations[category].good;
-                } else if (percentage >= 60) {
-                    colorClass = 'status-medium';
-                    statusText = 'Do poprawy';
-                    recommendations = categoryRecommendations[category].medium;
-                } else {
-                    colorClass = 'status-poor';
-                    statusText = 'Wymaga uwagi';
-                    recommendations = categoryRecommendations[category].poor;
-                }
-                
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'category-score';
-                categoryDiv.innerHTML = `
-                    <div class="category-header">
-                        <h4>${category}</h4>
-                        <div class="score ${colorClass}">${Math.round(percentage)}%</div>
-                    </div>
-                    <div style="color: #666; font-size: 0.8rem; margin-bottom: 8px;">
-                        Status: <span class="${colorClass}">${statusText}</span> (${data.score}/${data.max} punktów)
-                    </div>
-                    <div class="category-recommendations">
-                        <h5>💡 Zalecenia:</h5>
-                        <ul>
-                            ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-                container.appendChild(categoryDiv);
-            });
+            if (map[cat]) recs.push(map[cat]);
         }
+    });
 
-        function showRecommendations(results) {
-            const recommendations = generateRecommendations(results);
-            const list = document.getElementById('recommendationsList');
-            list.innerHTML = '';
-            
-            recommendations.forEach(rec => {
-                const li = document.createElement('li');
-                li.textContent = rec;
-                list.appendChild(li);
-            });
-        }
+    if (pct >= 85) {
+        recs.push("Masz bardzo dobre podstawy – przygotuj plan monitorowania KPI");
+    } else if (pct >= 75) {
+        recs.push("NIE STARTUJ jeszcze – wypełnij najpierw kluczowe luki");
+    } else if (pct >= 60) {
+        recs.push("ZATRZYMAJ SIĘ – w tym stanie to hazard z Twoimi pieniędzmi");
+    } else {
+        recs.push("ZATRZYMAJ SIĘ – znajdź doświadczonego mentora zanim stracisz oszczędności");
+    }
 
-        function generateRecommendations(results) {
-            const recs = [];
-            
-            // Analizuj kategorie z najniższymi wynikami
-            const sortedCategories = Object.entries(categoryScores)
-                .map(([cat, data]) => ({ category: cat, percentage: (data.score / data.max) * 100 }))
-                .sort((a, b) => a.percentage - b.percentage);
-            
-            const weakestCategories = sortedCategories.slice(0, 3);
-            
-            weakestCategories.forEach(cat => {
-                switch(cat.category) {
-                    case 'Doświadczenie':
-                        if (cat.percentage < 60) {
-                            recs.push('Zdobądź więcej doświadczenia w branży poprzez praktyki, staże lub współpracę z mentorem');
-                        }
-                        break;
-                    case 'Kapitał':
-                        if (cat.percentage < 60) {
-                            recs.push('Zabezpiecz większy kapitał rezerwowy - minimum na 6 miesięcy działalności');
-                        }
-                        break;
-                    case 'Rynek':
-                        if (cat.percentage < 60) {
-                            recs.push('Przeprowadź dokładne badania rynku i analizę konkurencji');
-                        }
-                        break;
-                    case 'Model biznesowy':
-                        if (cat.percentage < 60) {
-                            recs.push('Opracuj szczegółowy biznesplan z analizą finansową');
-                        }
-                        break;
-                    case 'Marketing':
-                        if (cat.percentage < 60) {
-                            recs.push('Stwórz strategię marketingową i zabezpiecz budżet na promocję');
-                        }
-                        break;
-                }
-            });
-            
-            // Ogólne rekomendacje na podstawie wyniku
-            if (results.percentage >= 95) {
-                recs.push('Jesteś gotowy na start - możesz śmiało rozpocząć działalność');
-                recs.push('Regularnie monitoruj postępy i dostosowuj strategię do rynku');
-            } else if (results.percentage >= 85) {
-                recs.push('Masz bardzo dobre podstawy - dopracuj ostatnie szczegóły');
-                recs.push('Przygotuj plan monitorowania kluczowych wskaźników biznesowych');
-            } else if (results.percentage >= 75) {
-                recs.push('NIE STARTUJ jeszcze - wypełnij najpierw kluczowe luki');
-                recs.push('Skoncentruj się na najsłabszych obszarach, to może uratować Twój biznes');
-            } else if (results.percentage >= 60) {
-                recs.push('ZATRZYMAJ SIĘ - w tym stanie biznes to hazard z Twoimi pieniędzmi');
-                recs.push('Potrzebujesz miesięcy solidnej pracy nad podstawami');
-            } else if (results.percentage >= 40) {
-                recs.push('ABSOLUTNIE NIE - to nie jest plan biznesowy, to fantazje');
-                recs.push('Zanim stracisz pieniądze, znajdź doświadczonego mentora');
-            } else {
-                recs.push('NATYCHMIAST STOP - to nie biznes, to droga do finansowej ruiny');
-                recs.push('Zdobądź najpierw doświadczenie pracując dla kogoś innego');
-            }
-            
-            return recs.slice(0, 6); // Maksymalnie 6 rekomendacji
-        }
+    // Category cards HTML
+    let catHTML = '';
+    Object.entries(catData).forEach(([cat, d]) => {
+        const cp = d.score / d.max * 100;
+        let colorClass, barClass, statusTxt, recList;
+        if (cp === 100)      { colorClass = 'st-green'; barClass = 'bar-green'; statusTxt = 'Doskonale'; recList = categoryRecs[cat].perfect; }
+        else if (cp >= 80)   { colorClass = 'st-green'; barClass = 'bar-green'; statusTxt = 'Dobrze'; recList = categoryRecs[cat].good; }
+        else if (cp >= 60)   { colorClass = 'st-yellow'; barClass = 'bar-yellow'; statusTxt = 'Do poprawy'; recList = categoryRecs[cat].medium; }
+        else                 { colorClass = 'st-red'; barClass = 'bar-red'; statusTxt = 'Wymaga uwagi'; recList = categoryRecs[cat].poor; }
 
-        function restartAssessment() {
-            initializeAssessment();
-            // Wyślij nową wysokość po restarcie
-            setTimeout(sendHeightToParent, 300);
-        }
+        catHTML += `
+        <div class="cat-card">
+            <div class="cat-header">
+                <span class="cat-name">${cat}</span>
+                <span class="cat-pct ${colorClass}">${Math.round(cp)}%&nbsp;<span style="font-weight:400;font-size:0.72rem;">${statusTxt}</span></span>
+            </div>
+            <div class="cat-bar-bg"><div class="cat-bar-fill ${barClass}" style="width:${cp}%"></div></div>
+            <div class="cat-recs">${recList.map(r => `<span>${r}</span>`).join('')}</div>
+        </div>`;
+    });
 
-        function openConsultation() {
-            window.open('https://tidycal.com/wojciech-kazimierowicz/bezplatna-konsultacja-naprawimyfirme', '_blank');
-        }
+    const recsItems = recs.slice(0, 5).map(r => `<li>${r}</li>`).join('');
 
-        // Inicjalizuj na start
-        initializeAssessment();
+    const html = `
+        <div class="score-banner">
+            <div class="score-circle ${levelClass}">
+                <span class="score-num">${Math.round(pct)}%</span>
+                <span class="score-pct">${emoji}</span>
+            </div>
+            <div class="score-right">
+                <div class="score-level ${levelClass.replace('level-','st-').replace('excellent','green').replace('very-low','green').replace('low','yellow').replace('medium','yellow').replace('high','red').replace('critical','red')}">${level}</div>
+                <div class="score-desc">${desc}</div>
+                <div class="score-recs">Wynik: ${total} / ${maxScore} punktów · ${questions.length} kategorii</div>
+            </div>
+        </div>
 
-        // Funkcje dla automatycznego dostosowania wysokości iframe
-        function sendHeightToParent() {
-            const height = Math.max(
-                document.body.scrollHeight,
-                document.body.offsetHeight,
-                document.documentElement.clientHeight,
-                document.documentElement.scrollHeight,
-                document.documentElement.offsetHeight
-            );
-            
-            if (window.parent !== window) {
-                try {
-                    window.parent.postMessage({ iframeHeight: height }, '*');
-                } catch (e) {
-                    // Ignore errors when posting to parent
-                }
-            }
-        }
+        <div class="recs-box">
+            <h4>🎯 Rekomendacje dla Twojego biznesu</h4>
+            <ul>${recsItems}</ul>
+        </div>
 
-        // Wyślij wysokość po załadowaniu
-        window.addEventListener('load', function() {
-            setTimeout(sendHeightToParent, 100);
-        });
+        <div class="section-title">Wyniki wg kategorii</div>
+        <div class="category-grid">${catHTML}</div>
 
-        // Wyślij wysokość po zmianie rozmiaru okna
-        window.addEventListener('resize', function() {
-            setTimeout(sendHeightToParent, 100);
-        });
+        <div class="action-row">
+            <button class="dh-btn-secondary" onclick="restartAssessment()">↺ Zacznij od nowa</button>
+            <button class="dh-btn-danger" onclick="openConsultation()">💬 Bezpłatna konsultacja</button>
+        </div>
+    `;
 
-        // Wyślij wysokość po kliknięciu (może zmienić wysokość)
-        document.addEventListener('click', function() {
-            setTimeout(sendHeightToParent, 300);
-        });
+    document.getElementById('questionnaire').style.display = 'none';
+    const resultsEl = document.getElementById('results');
+    resultsEl.innerHTML = html;
+    resultsEl.style.display = 'block';
 
-        // Observer do monitorowania zmian wysokości
-        if (window.ResizeObserver) {
-            const resizeObserver = new ResizeObserver(function() {
-                setTimeout(sendHeightToParent, 50);
-            });
-            resizeObserver.observe(document.body);
-        }
+    setTimeout(sendHeight, 400);
+}
 
-        // MutationObserver do monitorowania zmian w DOM
-        if (window.MutationObserver) {
-            const mutationObserver = new MutationObserver(function() {
-                setTimeout(sendHeightToParent, 100);
-            });
-            mutationObserver.observe(document.body, {
-                childList: true,
-                subtree: true,
-                attributes: true,
-                attributeFilter: ['style', 'class']
-            });
-        }
-    </script>
+function restartAssessment() { init(); }
+function openConsultation() {
+    window.open('https://tidycal.com/wojciech-kazimierowicz/bezplatna-konsultacja-naprawimyfirme', '_blank');
+}
+
+function sendHeight() {
+    const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    if (window.parent !== window) {
+        try { window.parent.postMessage({ iframeHeight: h }, '*'); } catch(e) {}
+    }
+}
+
+window.addEventListener('load', function() { init(); sendHeight(); });
+window.addEventListener('resize', function() { setTimeout(sendHeight, 100); });
+document.addEventListener('click', function() { setTimeout(sendHeight, 300); });
+
+if (window.ResizeObserver) {
+    new ResizeObserver(function() { setTimeout(sendHeight, 50); }).observe(document.body);
+}
+if (window.MutationObserver) {
+    new MutationObserver(function() { setTimeout(sendHeight, 100); }).observe(document.body, {
+        childList: true, subtree: true, attributes: true, attributeFilter: ['style','class']
+    });
+}
+</script>
 </body>
 </html>
